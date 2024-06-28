@@ -11,3 +11,8 @@ prost-types = { workspace = true }
 tokio = { workspace = true }
 tonic = { workspace = true }
 tonic-build = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+prost-build = { workspace = true }
+tonic-build = { workspace = true }
