@@ -1,26 +1,54 @@
 use anyhow::Result;
-use chrono::{DateTime, Days, Utc};
 use clickhouse::{Client, Row};
 use fake::{
-    faker::{chrono::en::DateTimeBetween, internet::en::SafeEmail, name::zh_cn::Name},
+    faker::internet::en::SafeEmail, faker::name::zh_cn::Name, faker::time::en::DateTimeBetween,
     Dummy, Fake, Faker,
 };
 use nanoid::nanoid;
 use rand::Rng;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use time::{ext::NumericalDuration, OffsetDateTime};
+use tokio::time::Instant;
 
+/*
+SELECT count(*) FROM user_stats
+
+SELECT
+    sum(rows) AS `总行数`,
+    formatReadableSize(sum(data_uncompressed_bytes)) AS `原始大小`,
+    formatReadableSize(sum(data_compressed_bytes)) AS `压缩大小`,
+    round((sum(data_compressed_bytes) / sum(data_uncompressed_bytes)) * 100, 0) AS `压缩率`
+FROM system.parts
+
+SELECT
+    table AS `表名`,
+    sum(rows) AS `总行数`,
+    formatReadableSize(sum(data_uncompressed_bytes)) AS `原始大小`,
+    formatReadableSize(sum(data_compressed_bytes)) AS `压缩大小`,
+    round((sum(data_compressed_bytes) / sum(data_uncompressed_bytes)) * 100, 0) AS `压缩率`
+FROM system.parts
+WHERE table IN ('user_stats')
+GROUP BY table
+
+*/
 #[tokio::main]
 async fn main() -> Result<()> {
-    // let user_stat = Faker.fake::<UserStat>();
-    // println!("{user_stat:?}");
     let client = Client::default()
         .with_url("http://localhost:8123")
         .with_database("stats");
-    let mut insert = client.insert("user_stats")?;
-    let user_stat = Faker.fake::<UserStat>();
-    insert.write(&user_stat).await?;
-    insert.end().await?;
+
+    for i in 0..50 {
+        let mut insert = client.insert("user_stats")?;
+        print!("batch insert {} started. ", i);
+        let begin = Instant::now();
+        for _ in 0..100_000 {
+            let user_stat = Faker.fake::<UserStat>();
+            insert.write(&user_stat).await?;
+        }
+        insert.end().await?;
+        println!("finish in {:?}", begin.elapsed());
+    }
 
     println!("Inserted 10 records successfully!");
 
@@ -35,11 +63,14 @@ struct UserStat {
     name: String,
     gender: Gender,
     #[dummy(faker = "DateTimeBetween(before(365*5), before(90))")]
-    created_at: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    created_at: OffsetDateTime,
     #[dummy(faker = "DateTimeBetween(before(30), now())")]
-    last_visited_at: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    last_visited_at: OffsetDateTime,
     #[dummy(faker = "DateTimeBetween(before(90), now())")]
-    last_watched_at: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    last_watched_at: OffsetDateTime,
     #[dummy(faker = "IntList(50, 100000, 100000)")]
     recent_watched: Vec<i32>,
     #[dummy(faker = "IntList(50, 200000, 100000)")]
@@ -49,19 +80,22 @@ struct UserStat {
     #[dummy(faker = "IntList(50, 400000, 100000)")]
     finished: Vec<i32>,
     #[dummy(faker = "DateTimeBetween(before(45), now())")]
-    last_email_notification: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    last_email_notification: OffsetDateTime,
     #[dummy(faker = "DateTimeBetween(before(15), now())")]
-    last_in_app_notification: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    last_in_app_notification: OffsetDateTime,
     #[dummy(faker = "DateTimeBetween(before(90), now())")]
-    last_sms_notification: DateTime<Utc>,
+    #[serde(with = "clickhouse::serde::time::datetime")]
+    last_sms_notification: OffsetDateTime,
 }
-// How to define enums that map to `Enum8`/`Enum16`.
+
 #[derive(Debug, Clone, Dummy, Serialize_repr, Deserialize_repr, PartialEq, Eq)]
 #[repr(u8)]
 enum Gender {
-    Female,
-    Male,
-    Unknown,
+    Female = 2,
+    Male = 1,
+    Unknown = 0,
 }
 
 struct UniqueEmail;
@@ -80,13 +114,14 @@ impl Dummy<UniqueEmail> for String {
     }
 }
 
-fn before(days: u64) -> DateTime<Utc> {
-    Utc::now().checked_sub_days(Days::new(days)).unwrap()
+fn before(days: i64) -> OffsetDateTime {
+    OffsetDateTime::now_utc().checked_sub(days.days()).unwrap()
 }
 
-fn now() -> DateTime<Utc> {
-    Utc::now()
+fn now() -> OffsetDateTime {
+    OffsetDateTime::now_utc()
 }
+
 struct IntList(pub i32, pub i32, pub i32);
 
 impl Dummy<IntList> for Vec<i32> {

@@ -1,5 +1,7 @@
 CREATE DATABASE IF NOT EXISTS stats;
 
+DROP TABLE user_stats;
+
 CREATE TABLE user_stats (
   email String,
   name String,
