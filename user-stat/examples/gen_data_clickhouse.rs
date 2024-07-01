@@ -14,12 +14,18 @@ use tokio::time::Instant;
 /*
 SELECT count(*) FROM user_stats
 
+SELECT * from  system.parts WHERE table IN ('user_stats')
+# 更新统计信息
+OPTIMIZE TABLE user_stats;
+
 SELECT
+    table AS `表名`,
     sum(rows) AS `总行数`,
     formatReadableSize(sum(data_uncompressed_bytes)) AS `原始大小`,
     formatReadableSize(sum(data_compressed_bytes)) AS `压缩大小`,
-    round((sum(data_compressed_bytes) / sum(data_uncompressed_bytes)) * 100, 0) AS `压缩率`
+    round((1-(sum(data_compressed_bytes) / sum(data_uncompressed_bytes))) * 100, 0) AS `压缩率`
 FROM system.parts
+GROUP BY table;
 
 SELECT
     table AS `表名`,
