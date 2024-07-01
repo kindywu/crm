@@ -32,23 +32,30 @@ ALTER SYSTEM SET work_mem = '64MB';
 #[tokio::main]
 async fn main() -> Result<()> {
     // println_fake();
+    println!("current dir: {:?}", env::current_dir());
+    dotenv::from_filename(env::current_dir()?.join("user-stat").join(".env")).ok();
 
     let url = env::var("DATABASE_URL").unwrap_or(DB_URL.to_owned());
+    println!("db url: {url}");
     let pool = PgPool::connect(&url).await?;
-    for i in 0..500 {
-        let user_stats = gen_fake_user_stats(10000);
-        let begin = Instant::now();
 
-        let mut tx = pool.begin().await?;
+    let batch = 500;
+    let batch_size = 10000;
+
+    for i in 0..batch {
+        let user_stats = gen_fake_user_stats(batch_size);
+        let begin = Instant::now();
         print!("batch insert {} started. ", i);
-        raw_insert_tran(user_stats, &mut tx).await?;
-        tx.commit().await?;
+
+        // let mut tx = pool.begin().await?;
+        // raw_insert_tran(user_stats, &mut tx).await?;
+        // tx.commit().await?;
 
         // bulk_insert(user_stats, &pool).await?;
 
-        // raw_insert(user_stats, &pool).await?;
+        raw_insert(user_stats, &pool).await?;
 
-        println!("finish in {:?}", begin.elapsed());
+        println!("finish insert {} rows in {:?}", batch_size, begin.elapsed());
     }
     Ok(())
 }

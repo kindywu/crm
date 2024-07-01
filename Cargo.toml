@@ -3,6 +3,7 @@ members = ["crm", "user-stat"]
 resolver = "2"
 
 [workspace.dependencies]
+dotenv = "0.15.0"
 anyhow = "1.0.86"
 prost = "0.12.6"
 prost-build = "0.12.6"
