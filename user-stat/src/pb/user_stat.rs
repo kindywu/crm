@@ -7,8 +7,10 @@
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct User {
     #[prost(string, tag = "1")]
+    #[builder(setter(into))]
     pub email: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
+    #[builder(setter(into))]
     pub name: ::prost::alloc::string::String,
 }
 #[derive(derive_builder::Builder)]
@@ -18,8 +20,10 @@ pub struct User {
 pub struct QueryRequest {
     /// map key: created_at, last_visited_at, ..
     #[prost(map = "string, message", tag = "1")]
+    #[builder(setter(each(name = "timestamp", into)))]
     pub timestamps: ::std::collections::HashMap<::prost::alloc::string::String, TimeQuery>,
     #[prost(map = "string, message", tag = "2")]
+    #[builder(setter(each(name = "id", into)))]
     pub ids: ::std::collections::HashMap<::prost::alloc::string::String, IdQuery>,
 }
 #[derive(derive_builder::Builder)]
@@ -28,6 +32,7 @@ pub struct QueryRequest {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RawQueryRequest {
     #[prost(string, tag = "1")]
+    #[builder(setter(into))]
     pub query: ::prost::alloc::string::String,
 }
 #[derive(derive_builder::Builder)]

@@ -28,6 +28,22 @@ fn main() -> Result<()> {
             ],
             None,
         )
+        .with_field_attributes(
+            &["User.email", "User.name", "RawQueryRequest.query"],
+            &[r#"#[builder(setter(into))]"#],
+        )
+        .with_field_attributes(
+            &["TimeQuery.before", "TimeQuery.after"],
+            &[r#"#[builder(setter(into, strip_option))]"#],
+        )
+        .with_field_attributes(
+            &["QueryRequest.timestamps"],
+            &[r#"#[builder(setter(each(name="timestamp", into)))]"#],
+        )
+        .with_field_attributes(
+            &["QueryRequest.ids"],
+            &[r#"#[builder(setter(each(name="id", into)))]"#],
+        )
         .compile(protos, &["../protos"])?;
 
     Ok(())
