@@ -10,13 +10,17 @@ pub struct UserServer {}
 
 #[tonic::async_trait]
 impl UserService for UserServer {
-    async fn get_user(&self, _request: Request<GetUserRequest>) -> Result<Response<User>, Status> {
+    async fn get_user(&self, request: Request<GetUserRequest>) -> Result<Response<User>, Status> {
+        let input = request.into_inner();
+        println!("get_user: {:?}", input);
         Ok(Response::new(User::default()))
     }
     async fn create_user(
         &self,
-        _request: Request<CreateUserRequest>,
+        request: Request<CreateUserRequest>,
     ) -> Result<Response<User>, Status> {
+        let input = request.into_inner();
+        println!("create_user: {:?}", input);
         Ok(Response::new(User::default()))
     }
 }
@@ -24,12 +28,12 @@ impl UserService for UserServer {
 #[tokio::main]
 async fn main() -> Result<()> {
     let addr = "[::1]:50051".parse().unwrap();
-    let user_server = UserServer::default();
+    let svc = UserServer::default();
 
     println!("UserServer listening on {}", addr);
 
     Server::builder()
-        .add_service(UserServiceServer::new(user_server))
+        .add_service(UserServiceServer::new(svc))
         .serve(addr)
         .await?;
 
