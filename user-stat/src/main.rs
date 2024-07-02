@@ -1,18 +1,25 @@
 use anyhow::Result;
-use user_stat::{IdQueryBuilder, QueryRequestBuilder, UserBuilder};
+use tonic::transport::Server;
+use tracing::{info, level_filters::LevelFilter};
+use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
+use user_stat::{user_stat_server::UserStatServer, AppConfig, UserStatService};
 
-fn main() -> Result<()> {
-    let u = UserBuilder::default()
-        .name("kindy")
-        .email("kindywu@outlook.com")
-        .build()?;
-    println!("{u:?}");
+#[tokio::main]
+async fn main() -> Result<()> {
+    let layer = Layer::new().with_filter(LevelFilter::INFO);
+    tracing_subscriber::registry().with(layer).init();
 
-    let id = IdQueryBuilder::default().ids(vec![1312]).build()?;
-    let q = QueryRequestBuilder::default()
-        .id(("viewed_but_not_started".to_string(), id))
-        .build()?;
-    println!("{q:?}");
+    let config = AppConfig::load()?;
+    let addr = config.server.port;
+    let addr = format!("[::1]:{}", addr).parse()?;
+
+    info!("UserStatServer listening on {}", addr);
+
+    let svc = UserStatService::new(config).await?;
+    Server::builder()
+        .add_service(UserStatServer::new(svc))
+        .serve(addr)
+        .await?;
 
     Ok(())
 }

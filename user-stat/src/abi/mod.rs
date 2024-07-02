@@ -1,13 +1,33 @@
 mod user_stat;
+use anyhow::Result;
+use std::sync::Arc;
 
+use sqlx::PgPool;
 pub use user_stat::*;
 
 use tonic::{Response, Status};
 
-use crate::{user_stat_server::UserStat, QueryRequest, RawQueryRequest};
+use crate::{user_stat_server::UserStat, AppConfig, QueryRequest, RawQueryRequest};
 
-#[derive(Default)]
-pub struct UserStatService {}
+#[allow(unused)]
+pub struct UserStatServiceState {
+    config: AppConfig,
+    pool: PgPool,
+}
+
+#[allow(unused)]
+pub struct UserStatService {
+    state: Arc<UserStatServiceState>,
+}
+
+impl UserStatService {
+    pub async fn new(config: AppConfig) -> Result<Self> {
+        let pool = PgPool::connect(&config.server.db_url).await?;
+        Ok(Self {
+            state: Arc::new(UserStatServiceState { config, pool }),
+        })
+    }
+}
 
 #[tonic::async_trait]
 impl UserStat for UserStatService {
