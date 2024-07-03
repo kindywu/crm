@@ -20,6 +20,8 @@ derive_builder = { workspace = true }
 tokio-stream = { workspace = true }
 itertools = { workspace = true }
 rand = { workspace = true }
+fake = { version = "2.9.2", features = ["derive", "chrono", "time"] }
+
 
 [build-dependencies]
 anyhow = { workspace = true }

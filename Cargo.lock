@@ -386,6 +386,7 @@ dependencies = [
  "chrono",
  "derive_builder",
  "dotenv",
+ "fake",
  "itertools 0.13.0",
  "prost",
  "prost-build",

@@ -17,9 +17,9 @@ impl AppConfig {
     pub fn load() -> Result<Self> {
         // read from  ./app.yml, or /etc/config/app.yml, or from env CHAT_CONFIG
         let ret = match (
-            File::open("user_stat.yml"),
-            File::open("/etc/config/user_stat.yml"),
-            env::var("USER_STAT_CONFIG"),
+            File::open("metadata.yml"),
+            File::open("/etc/config/metadata.yml"),
+            env::var("METADATA_CONFIG"),
         ) {
             (Ok(reader), _, _) => serde_yaml::from_reader(reader),
             (_, Ok(reader), _) => serde_yaml::from_reader(reader),
