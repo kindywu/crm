@@ -15,7 +15,6 @@ pub struct UserStatServiceState {
     pool: PgPool,
 }
 
-#[allow(unused)]
 pub struct UserStatService {
     state: Arc<UserStatServiceState>,
 }

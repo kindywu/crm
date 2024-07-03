@@ -381,6 +381,26 @@ dependencies = [
 [[package]]
 name = "crm-metadata"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "derive_builder",
+ "dotenv",
+ "itertools 0.13.0",
+ "prost",
+ "prost-build",
+ "prost-types",
+ "rand",
+ "serde",
+ "serde_yaml",
+ "sqlx",
+ "tokio",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "crm-send"
