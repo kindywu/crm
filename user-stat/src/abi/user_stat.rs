@@ -96,13 +96,13 @@ mod tests {
     use tokio_stream::StreamExt;
 
     use crate::{
-        AppConfig, IdQuery, QueryRequestBuilder, RawQueryRequest, TimeQuery, UserStatService,
+        AppState, IdQuery, QueryRequestBuilder, RawQueryRequest, TimeQuery, UserStatService,
     };
 
     #[tokio::test]
     async fn query_should_work() -> Result<()> {
-        let config = AppConfig::load().expect("Failed to load config");
-        let svc = UserStatService::new(config).await?;
+        let (_tdb, app_state) = AppState::try_new_test().await?;
+        let svc = UserStatService::new(app_state).await?;
         let query = QueryRequestBuilder::default()
             .timestamp(("created_at".to_string(), tq(Some(120), None)))
             .timestamp(("last_visited_at".to_string(), tq(Some(30), None)))
@@ -138,8 +138,8 @@ mod tests {
 
     #[tokio::test]
     async fn raw_query_should_work() -> Result<()> {
-        let config = AppConfig::load().expect("Failed to load config");
-        let svc = UserStatService::new(config).await?;
+        let (_tdb, app_state) = AppState::try_new_test().await?;
+        let svc = UserStatService::new(app_state).await?;
 
         let query = "select * from user_stats where created_at > '2024-01-01' limit 5".to_string();
 

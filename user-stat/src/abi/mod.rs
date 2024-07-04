@@ -2,28 +2,20 @@ mod user_stat;
 use anyhow::Result;
 use std::sync::Arc;
 
-use sqlx::PgPool;
 pub use user_stat::*;
 
 use tonic::{Response, Status};
 
-use crate::{user_stat_server::UserStat, AppConfig, QueryRequest, RawQueryRequest};
-
-#[allow(unused)]
-pub struct UserStatServiceState {
-    config: AppConfig,
-    pool: PgPool,
-}
+use crate::{app_state::AppState, user_stat_server::UserStat, QueryRequest, RawQueryRequest};
 
 pub struct UserStatService {
-    state: Arc<UserStatServiceState>,
+    state: Arc<AppState>,
 }
 
 impl UserStatService {
-    pub async fn new(config: AppConfig) -> Result<Self> {
-        let pool = PgPool::connect(&config.server.db_url).await?;
+    pub async fn new(app_state: AppState) -> Result<Self> {
         Ok(Self {
-            state: Arc::new(UserStatServiceState { config, pool }),
+            state: Arc::new(app_state),
         })
     }
 }

@@ -2,7 +2,7 @@ use anyhow::Result;
 use tonic::transport::Server;
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
-use user_stat::{user_stat_server::UserStatServer, AppConfig, UserStatService};
+use user_stat::{user_stat_server::UserStatServer, AppConfig, AppState, UserStatService};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,8 +14,8 @@ async fn main() -> Result<()> {
     let addr = format!("[::1]:{}", addr).parse()?;
 
     info!("UserStatServer listening on {}", addr);
-
-    let svc = UserStatService::new(config).await?;
+    let app_state = AppState::try_new(config).await?;
+    let svc = UserStatService::new(app_state).await?;
     Server::builder()
         .add_service(UserStatServer::new(svc))
         .serve(addr)

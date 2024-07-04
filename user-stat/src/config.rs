@@ -2,12 +2,12 @@ use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{env, fs::File};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct AppConfig {
     pub server: ServerConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ServerConfig {
     pub port: u16,
     pub db_url: String,

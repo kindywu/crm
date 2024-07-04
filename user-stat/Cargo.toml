@@ -35,4 +35,5 @@ clickhouse = { version = "0.11.6", features = ["time"] }
 fake = { version = "2.9.2", features = ["derive", "chrono", "time"] }
 nanoid = "0.4.0"
 serde_repr = "0.1.19"
+sqlx-db-tester = "0.4.2"
 time = "0.3.36"
