@@ -2,7 +2,6 @@ mod sender;
 
 use std::pin::Pin;
 
-use chrono::Local;
 use prost_types::Timestamp;
 use sender::Sender;
 use tokio::sync::mpsc;
@@ -11,7 +10,7 @@ use tonic::{async_trait, Request, Response, Status, Streaming};
 use tracing::warn;
 
 use crate::{
-    notification_server::Notification, send_request::Msg, AppConfig, SendRequest, SendResponse,
+    notification_server::Notification, send_request::Msg, AppConfig, Now, SendRequest, SendResponse,
 };
 
 const CHANNEL_SIZE: usize = 1024;
@@ -53,7 +52,7 @@ impl Notification for NotificationService {
                         Ok(message_id) => {
                             let res = SendResponse {
                                 message_id,
-                                timestamp: Some(timestamp_now()),
+                                timestamp: Some(Timestamp::now()),
                             };
                             tx.send(Ok(res)).await.unwrap();
                         }
@@ -64,14 +63,6 @@ impl Notification for NotificationService {
         });
         let stream = ReceiverStream::new(rx);
         Ok(Response::new(Box::pin(stream)))
-    }
-}
-
-fn timestamp_now() -> Timestamp {
-    let now = Local::now();
-    Timestamp {
-        seconds: now.timestamp(),
-        nanos: now.timestamp_subsec_nanos() as i32,
     }
 }
 
