@@ -7,11 +7,11 @@ use crate::InAppMessage;
 use crate::SmsMessage;
 
 #[allow(unused)]
-pub trait Send {
+pub trait Sender {
     async fn send(&self) -> Result<String>;
 }
 
-impl Send for EmailMessage {
+impl Sender for EmailMessage {
     async fn send(&self) -> Result<String> {
         println!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
@@ -19,7 +19,7 @@ impl Send for EmailMessage {
     }
 }
 
-impl Send for InAppMessage {
+impl Sender for InAppMessage {
     async fn send(&self) -> Result<String> {
         println!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
@@ -27,7 +27,7 @@ impl Send for InAppMessage {
     }
 }
 
-impl Send for SmsMessage {
+impl Sender for SmsMessage {
     async fn send(&self) -> Result<String> {
         println!("send {self:?}");
         sleep(Duration::from_secs(1)).await;

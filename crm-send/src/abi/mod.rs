@@ -1,12 +1,14 @@
-mod send;
+mod sender;
 
 use std::pin::Pin;
 
 use chrono::Local;
 use prost_types::Timestamp;
+use sender::Sender;
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
 use tonic::{async_trait, Request, Response, Status, Streaming};
+use tracing::warn;
 
 use crate::{
     notification_server::Notification, send_request::Msg, AppConfig, SendRequest, SendResponse,
@@ -41,22 +43,27 @@ impl Notification for NotificationService {
         tokio::spawn(async move {
             while let Some(Ok(req)) = stream.next().await {
                 if let Some(msg) = req.msg {
-                    let message_id = match msg {
-                        Msg::Email(msg) => msg.message_id,
-                        Msg::Sms(msg) => msg.message_id,
-                        Msg::InApp(msg) => msg.message_id,
+                    let result = match msg {
+                        Msg::Email(msg) => msg.send().await,
+                        Msg::Sms(msg) => msg.send().await,
+                        Msg::InApp(msg) => msg.send().await,
                     };
 
-                    let now = Local::now();
-                    let timestamp = Some(Timestamp {
-                        seconds: now.timestamp(),
-                        nanos: now.timestamp_subsec_nanos() as i32,
-                    });
-                    let res = SendResponse {
-                        message_id,
-                        timestamp,
-                    };
-                    tx.send(Ok(res)).await.unwrap();
+                    match result {
+                        Ok(message_id) => {
+                            let now = Local::now();
+                            let timestamp = Some(Timestamp {
+                                seconds: now.timestamp(),
+                                nanos: now.timestamp_subsec_nanos() as i32,
+                            });
+                            let res = SendResponse {
+                                message_id,
+                                timestamp,
+                            };
+                            tx.send(Ok(res)).await.unwrap();
+                        }
+                        Err(e) => warn!("{}", e),
+                    }
                 }
             }
         });
