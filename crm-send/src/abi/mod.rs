@@ -51,14 +51,9 @@ impl Notification for NotificationService {
 
                     match result {
                         Ok(message_id) => {
-                            let now = Local::now();
-                            let timestamp = Some(Timestamp {
-                                seconds: now.timestamp(),
-                                nanos: now.timestamp_subsec_nanos() as i32,
-                            });
                             let res = SendResponse {
                                 message_id,
-                                timestamp,
+                                timestamp: Some(timestamp_now()),
                             };
                             tx.send(Ok(res)).await.unwrap();
                         }
@@ -69,6 +64,14 @@ impl Notification for NotificationService {
         });
         let stream = ReceiverStream::new(rx);
         Ok(Response::new(Box::pin(stream)))
+    }
+}
+
+fn timestamp_now() -> Timestamp {
+    let now = Local::now();
+    Timestamp {
+        seconds: now.timestamp(),
+        nanos: now.timestamp_subsec_nanos() as i32,
     }
 }
 

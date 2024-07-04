@@ -1,6 +1,7 @@
 use anyhow::Result;
 use tokio::time::sleep;
 use tokio::time::Duration;
+use tracing::info;
 
 use crate::EmailMessage;
 use crate::InAppMessage;
@@ -12,7 +13,7 @@ pub trait Sender {
 
 impl Sender for EmailMessage {
     async fn send(&self) -> Result<String> {
-        println!("send {self:?}");
+        info!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
         Ok(self.message_id.clone())
     }
@@ -20,7 +21,7 @@ impl Sender for EmailMessage {
 
 impl Sender for InAppMessage {
     async fn send(&self) -> Result<String> {
-        println!("send {self:?}");
+        info!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
         Ok(self.message_id.clone())
     }
@@ -28,7 +29,7 @@ impl Sender for InAppMessage {
 
 impl Sender for SmsMessage {
     async fn send(&self) -> Result<String> {
-        println!("send {self:?}");
+        info!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
         Ok(self.message_id.clone())
     }
