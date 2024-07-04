@@ -61,6 +61,7 @@ jobs:
         run: cargo nextest run --all-features
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
+
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v2
         id: git-cliff

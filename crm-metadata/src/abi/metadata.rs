@@ -6,7 +6,6 @@ use fake::{
 };
 use prost_types::Timestamp;
 use rand::Rng;
-use sqlx::PgPool;
 use std::{pin::Pin, sync::Arc};
 use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream, StreamExt};
@@ -21,7 +20,6 @@ use crate::{
 #[allow(unused)]
 pub struct MetadataServiceState {
     config: AppConfig,
-    pool: PgPool,
 }
 
 #[allow(unused)]
@@ -31,9 +29,8 @@ pub struct MetadataService {
 
 impl MetadataService {
     pub async fn new(config: AppConfig) -> Result<Self> {
-        let pool = PgPool::connect(&config.server.db_url).await?;
         Ok(Self {
-            state: Arc::new(MetadataServiceState { config, pool }),
+            state: Arc::new(MetadataServiceState { config }),
         })
     }
 }

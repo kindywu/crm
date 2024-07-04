@@ -26,7 +26,6 @@ mod test_utils {
 
     use super::AppState;
 
-    #[cfg(test)]
     impl AppState {
         pub async fn try_new_test() -> Result<(TestPg, Self)> {
             // read test db server
