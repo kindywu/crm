@@ -21,9 +21,13 @@ tokio-stream = { workspace = true }
 itertools = { workspace = true }
 rand = { workspace = true }
 fake = { version = "2.9.2", features = ["derive", "chrono", "time"] }
+uuid = { version = "1.9.1", features = ["v4"] }
 
 
 [build-dependencies]
 anyhow = { workspace = true }
 prost-build = { workspace = true }
 tonic-build = { workspace = true }
+
+[dev-dependencies]
+tonic-mock = "0.3.0"

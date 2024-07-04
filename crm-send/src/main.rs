@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let addr = config.server.port;
     let addr = format!("[::1]:{}", addr).parse()?;
 
-    info!("UserStatServer listening on {}", addr);
+    info!("NotificationServer listening on {}", addr);
 
     let svc = NotificationService::new(config);
     Server::builder()

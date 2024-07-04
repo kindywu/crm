@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let addr = config.server.port;
     let addr = format!("[::1]:{}", addr).parse()?;
 
-    info!("UserStatServer listening on {}", addr);
+    info!("MetadataServer listening on {}", addr);
 
     let svc = MetadataService::new(config).await?;
     Server::builder()
