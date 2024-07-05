@@ -30,7 +30,10 @@ impl UserStatService {
             .map(|(k, v)| ids_query(&k, v.ids))
             .join(" AND ");
 
-        sql.push_str(" AND ");
+        if !time_conditions.is_empty() {
+            sql.push_str(" AND ");
+        }
+
         sql.push_str(&id_conditions);
 
         println!("Generated SQL: {}", sql);
@@ -91,12 +94,12 @@ fn ids_query(name: &str, ids: Vec<u32>) -> String {
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-    use chrono::Utc;
-    use prost_types::Timestamp;
+
     use tokio_stream::StreamExt;
 
     use crate::{
-        AppState, IdQuery, QueryRequestBuilder, RawQueryRequest, TimeQuery, UserStatService,
+        test_utils::{id, tq},
+        AppState, QueryRequestBuilder, RawQueryRequest, UserStatService,
     };
 
     #[tokio::test]
@@ -115,25 +118,6 @@ mod tests {
             println!("{:?}", res);
         }
         Ok(())
-    }
-    fn id(id: &[u32]) -> IdQuery {
-        IdQuery { ids: id.to_vec() }
-    }
-
-    fn tq(lower: Option<i64>, upper: Option<i64>) -> TimeQuery {
-        TimeQuery {
-            lower: lower.map(to_ts),
-            upper: upper.map(to_ts),
-        }
-    }
-    fn to_ts(days: i64) -> Timestamp {
-        let dt = Utc::now()
-            .checked_sub_signed(chrono::Duration::days(days))
-            .unwrap();
-        Timestamp {
-            seconds: dt.timestamp(),
-            nanos: dt.timestamp_subsec_nanos() as i32,
-        }
     }
 
     #[tokio::test]

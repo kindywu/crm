@@ -3,6 +3,9 @@ name = "user-stat"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+test_utils = ["sqlx-db-tester"]
 
 [dependencies]
 anyhow = { workspace = true }
@@ -21,6 +24,7 @@ derive_builder = { workspace = true }
 tokio-stream = { workspace = true }
 itertools = { workspace = true }
 rand = { workspace = true }
+sqlx-db-tester = { version = "0.4.2", optional = true }
 
 
 [build-dependencies]
@@ -35,5 +39,5 @@ clickhouse = { version = "0.11.6", features = ["time"] }
 fake = { version = "2.9.2", features = ["derive", "chrono", "time"] }
 nanoid = "0.4.0"
 serde_repr = "0.1.19"
-sqlx-db-tester = "0.4.2"
 time = "0.3.36"
+user-stat = { workspace = true, features = ["test_utils"] }
