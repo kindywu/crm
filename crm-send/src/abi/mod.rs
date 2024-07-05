@@ -80,15 +80,9 @@ mod tests {
         let config = AppConfig::load()?;
         let service = NotificationService::new(config);
         let events = vec![
-            SendRequest {
-                msg: Some(Msg::Email(EmailMessage::fake())),
-            },
-            SendRequest {
-                msg: Some(Msg::InApp(InAppMessage::fake())),
-            },
-            SendRequest {
-                msg: Some(Msg::Sms(SmsMessage::fake())),
-            },
+            EmailMessage::fake().into(),
+            InAppMessage::fake().into(),
+            SmsMessage::fake().into(),
         ];
 
         let request = tonic_mock::streaming_request(events);

@@ -3,8 +3,10 @@ use tokio::time::sleep;
 use tokio::time::Duration;
 use tracing::info;
 
+use crate::send_request::Msg;
 use crate::EmailMessage;
 use crate::InAppMessage;
+use crate::SendRequest;
 use crate::SmsMessage;
 
 pub trait Sender {
@@ -19,6 +21,20 @@ impl Sender for EmailMessage {
     }
 }
 
+impl From<EmailMessage> for Msg {
+    fn from(value: EmailMessage) -> Self {
+        Msg::Email(value)
+    }
+}
+
+impl From<EmailMessage> for SendRequest {
+    fn from(value: EmailMessage) -> Self {
+        SendRequest {
+            msg: Some(Msg::Email(value)),
+        }
+    }
+}
+
 impl Sender for InAppMessage {
     async fn send(&self) -> Result<String> {
         info!("send {self:?}");
@@ -27,11 +43,39 @@ impl Sender for InAppMessage {
     }
 }
 
+impl From<InAppMessage> for Msg {
+    fn from(value: InAppMessage) -> Self {
+        Msg::InApp(value)
+    }
+}
+
+impl From<InAppMessage> for SendRequest {
+    fn from(value: InAppMessage) -> Self {
+        SendRequest {
+            msg: Some(Msg::InApp(value)),
+        }
+    }
+}
+
 impl Sender for SmsMessage {
     async fn send(&self) -> Result<String> {
         info!("send {self:?}");
         sleep(Duration::from_secs(1)).await;
         Ok(self.message_id.clone())
+    }
+}
+
+impl From<SmsMessage> for Msg {
+    fn from(value: SmsMessage) -> Self {
+        Msg::Sms(value)
+    }
+}
+
+impl From<SmsMessage> for SendRequest {
+    fn from(value: SmsMessage) -> Self {
+        SendRequest {
+            msg: Some(Msg::Sms(value)),
+        }
     }
 }
 
