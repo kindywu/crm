@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use anyhow::Result;
 use crm_send::{
     notification_client::NotificationClient, notification_server::NotificationServer, AppConfig,
-    EmailMessage, InAppMessage, NotificationService, ServerConfig, SmsMessage,
+    EmailMessage, InAppMessage, NotificationService, SmsMessage,
 };
 use tokio::{spawn, time::sleep};
 use tokio_stream::StreamExt;
@@ -12,7 +12,7 @@ use tracing::info;
 
 #[tokio::test]
 async fn test_send_should_work() -> Result<()> {
-    let addr = start_server(50003).await?;
+    let addr = start_server().await?;
 
     sleep(Duration::from_secs(1)).await;
 
@@ -43,12 +43,10 @@ async fn start_client(addr: SocketAddr) -> Result<()> {
     Ok(())
 }
 
-async fn start_server(port: u16) -> Result<SocketAddr> {
-    let config = AppConfig {
-        server: ServerConfig { port },
-    };
+async fn start_server() -> Result<SocketAddr> {
+    let config = AppConfig::load()?;
 
-    let addr = format!("[::1]:{}", port).parse()?;
+    let addr = format!("[::1]:{}", config.server.port).parse()?;
     info!("NotificationServer listening on {}", addr);
 
     let svc = NotificationService::new(config);

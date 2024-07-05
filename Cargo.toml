@@ -28,3 +28,5 @@ sqlx = { version = "0.7.4", features = [
 ] }
 
 crm-send = { path = "crm-send" }
+crm-metadata = { path = "crm-metadata" }
+user-stat = { path = "user-stat" }
