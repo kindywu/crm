@@ -79,6 +79,7 @@ impl From<SmsMessage> for SendRequest {
     }
 }
 
+#[cfg(feature = "test_utils")]
 impl EmailMessage {
     pub fn fake() -> Self {
         use fake::faker::internet::en::SafeEmail;
@@ -94,7 +95,7 @@ impl EmailMessage {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "test_utils")]
 impl InAppMessage {
     pub fn fake() -> Self {
         use uuid::Uuid;
@@ -107,7 +108,7 @@ impl InAppMessage {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "test_utils")]
 impl SmsMessage {
     pub fn fake() -> Self {
         use fake::faker::phone_number::en::PhoneNumber;
