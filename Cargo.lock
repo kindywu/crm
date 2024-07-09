@@ -370,6 +370,7 @@ name = "crm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "crm-metadata",
  "crm-send",
  "prost",
@@ -378,11 +379,13 @@ dependencies = [
  "serde",
  "serde_yaml",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tonic-build",
  "tracing",
  "tracing-subscriber",
  "user-stat",
+ "uuid",
 ]
 
 [[package]]

@@ -14,7 +14,7 @@ pub type ResponseStream = Pin<Box<dyn Stream<Item = Result<User, Status>> + Send
 
 impl UserStatService {
     pub async fn query(&self, req: QueryRequest) -> Result<Response<ResponseStream>, Status> {
-        let mut sql = "SELECT email, name FROM user_stats WHERE ".to_string();
+        let mut sql = "SELECT email, name FROM user_stats WHERE 1=1".to_string();
 
         let time_conditions = req
             .timestamps
@@ -22,7 +22,10 @@ impl UserStatService {
             .map(|(k, v)| timestamp_query(&k, v.lower, v.upper))
             .join(" AND ");
 
-        sql.push_str(&time_conditions);
+        if !time_conditions.is_empty() {
+            sql.push_str(" AND ");
+            sql.push_str(&time_conditions);
+        }
 
         let id_conditions = req
             .ids
@@ -30,11 +33,10 @@ impl UserStatService {
             .map(|(k, v)| ids_query(&k, v.ids))
             .join(" AND ");
 
-        if !time_conditions.is_empty() {
+        if !id_conditions.is_empty() {
             sql.push_str(" AND ");
+            sql.push_str(&id_conditions);
         }
-
-        sql.push_str(&id_conditions);
 
         println!("Generated SQL: {}", sql);
 
@@ -74,8 +76,8 @@ fn timestamp_query(name: &str, lower: Option<Timestamp>, upper: Option<Timestamp
     format!(
         "{} BETWEEN '{}' AND '{}'",
         name,
-        ts_to_utc(upper.unwrap()).to_rfc3339(),
-        ts_to_utc(lower.unwrap()).to_rfc3339()
+        ts_to_utc(lower.unwrap()).to_rfc3339(),
+        ts_to_utc(upper.unwrap()).to_rfc3339()
     )
 }
 
