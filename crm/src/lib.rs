@@ -17,6 +17,10 @@ use user_stat::user_stat_client::UserStatClient;
 pub struct UserService {}
 
 impl UserService {
+    pub fn new() -> Self {
+        Self {}
+    }
+
     pub fn into_server(self) -> UserServer<Self> {
         UserServer::new(self)
     }

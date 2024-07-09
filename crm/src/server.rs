@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let addr = format!("[::1]:{}", config.server.port).parse().unwrap();
 
     let crm_service = CrmService::try_new().await?;
-    let user_service = UserService::default();
+    let user_service = UserService::new();
 
     info!("CrmServer listening on {}", addr);
 
