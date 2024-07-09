@@ -1,10 +1,19 @@
+#![allow(unused)]
+
 use anyhow::Result;
 use crm::{user_service_client::UserServiceClient, CreateUserRequest, GetUserRequest};
 use tonic::Request;
 
+const CRM_SERVER: &str = "http://[::1]:50000";
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut client = UserServiceClient::connect("http://[::1]:50051").await?;
+    call_user_service().await?;
+    Ok(())
+}
+
+async fn call_user_service() -> Result<()> {
+    let mut client = UserServiceClient::connect(CRM_SERVER).await?;
 
     let request = Request::new(GetUserRequest { id: 1 });
 
@@ -20,6 +29,5 @@ async fn main() -> Result<()> {
     let response = client.create_user(request).await?;
 
     println!("RESPONSE={:?}", response);
-
     Ok(())
 }

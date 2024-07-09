@@ -1,7 +1,7 @@
 use anyhow::Result;
 use crm::{
     user_service_server::{UserService, UserServiceServer},
-    CreateUserRequest, GetUserRequest, User,
+    AppConfig, CreateUserRequest, GetUserRequest, User,
 };
 use tonic::{transport::Server, Request, Response, Status};
 
@@ -27,10 +27,11 @@ impl UserService for UserServer {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let addr = "[::1]:50051".parse().unwrap();
+    let config = AppConfig::load()?;
+    let addr = format!("[::1]:{}", config.server.port).parse().unwrap();
     let svc = UserServer::default();
 
-    println!("UserServer listening on {}", addr);
+    println!("CrmServer listening on {}", addr);
 
     Server::builder()
         .add_service(UserServiceServer::new(svc))
