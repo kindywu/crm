@@ -1,13 +1,13 @@
 use anyhow::Result;
-use crm::User;
+use crm::UserInfo;
 use prost::{bytes::BytesMut, Message};
 
 fn main() -> Result<()> {
-    let user = User::new(36, "kindy", "kindywu@qq.com");
+    let user = UserInfo::new(36, "kindy", "kindywu@qq.com");
     println!("{user:?}");
     let mut buf = BytesMut::new();
     user.encode(&mut buf)?;
-    let user = User::decode(buf)?;
+    let user = UserInfo::decode(buf)?;
     println!("{user:?}");
     Ok(())
 }

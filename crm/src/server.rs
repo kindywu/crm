@@ -1,40 +1,25 @@
 use anyhow::Result;
-use crm::{
-    user_service_server::{UserService, UserServiceServer},
-    AppConfig, CreateUserRequest, GetUserRequest, User,
-};
-use tonic::{transport::Server, Request, Response, Status};
-
-#[derive(Default)]
-pub struct UserServer {}
-
-#[tonic::async_trait]
-impl UserService for UserServer {
-    async fn get_user(&self, request: Request<GetUserRequest>) -> Result<Response<User>, Status> {
-        let input = request.into_inner();
-        println!("get_user: {:?}", input);
-        Ok(Response::new(User::default()))
-    }
-    async fn create_user(
-        &self,
-        request: Request<CreateUserRequest>,
-    ) -> Result<Response<User>, Status> {
-        let input = request.into_inner();
-        println!("create_user: {:?}", input);
-        Ok(Response::new(User::default()))
-    }
-}
+use crm::{AppConfig, CrmService, UserService};
+use tonic::transport::Server;
+use tracing::{info, level_filters::LevelFilter};
+use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let layer = Layer::new().with_filter(LevelFilter::INFO);
+    tracing_subscriber::registry().with(layer).init();
+
     let config = AppConfig::load()?;
     let addr = format!("[::1]:{}", config.server.port).parse().unwrap();
-    let svc = UserServer::default();
 
-    println!("CrmServer listening on {}", addr);
+    let crm_service = CrmService::try_new().await?;
+    let user_service = UserService::default();
+
+    info!("CrmServer listening on {}", addr);
 
     Server::builder()
-        .add_service(UserServiceServer::new(svc))
+        .add_service(user_service.into_server())
+        .add_service(crm_service.into_server())
         .serve(addr)
         .await?;
 

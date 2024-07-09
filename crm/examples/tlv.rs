@@ -1,9 +1,9 @@
 use anyhow::Result;
-use crm::User;
+use crm::UserInfo;
 use prost::Message;
 
 fn main() -> Result<()> {
-    let user = User::new(257, "你", "kindywu@qq.com");
+    let user = UserInfo::new(257, "你", "kindywu@qq.com");
     println!("{user:?}");
     /*
        message User {

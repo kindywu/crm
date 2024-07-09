@@ -7,13 +7,13 @@ pub struct AppConfig {
     pub server: ServerConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Clone, Deserialize)]
 pub struct ServerConfig {
     pub port: u16,
-    sender_email: String,
-    user_stats: String,
-    metadata: String,
-    notification: String,
+    pub sender_email: String,
+    pub user_stats: String,
+    pub metadata: String,
+    pub notification: String,
 }
 
 impl AppConfig {

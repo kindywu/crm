@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use anyhow::Result;
-use crm::{user_service_client::UserServiceClient, CreateUserRequest, GetUserRequest};
+use crm::{user_client::UserClient, CreateUserRequest, GetUserRequest};
 use tonic::Request;
 
 const CRM_SERVER: &str = "http://[::1]:50000";
@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
 }
 
 async fn call_user_service() -> Result<()> {
-    let mut client = UserServiceClient::connect(CRM_SERVER).await?;
+    let mut client = UserClient::connect(CRM_SERVER).await?;
 
     let request = Request::new(GetUserRequest { id: 1 });
 

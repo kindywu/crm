@@ -370,6 +370,8 @@ name = "crm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "crm-metadata",
+ "crm-send",
  "prost",
  "prost-build",
  "prost-types",
@@ -378,6 +380,9 @@ dependencies = [
  "tokio",
  "tonic",
  "tonic-build",
+ "tracing",
+ "tracing-subscriber",
+ "user-stat",
 ]
 
 [[package]]

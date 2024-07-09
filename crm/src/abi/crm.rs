@@ -2,9 +2,9 @@ use std::time::SystemTime;
 
 use prost_types::Timestamp;
 
-use crate::User;
+use crate::UserInfo;
 
-impl User {
+impl UserInfo {
     pub fn new(id: u64, name: &str, email: &str) -> Self {
         Self {
             id,
