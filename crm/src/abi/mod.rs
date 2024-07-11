@@ -1,3 +1,4 @@
+mod build_query;
 mod crm;
 mod user;
 

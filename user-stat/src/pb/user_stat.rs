@@ -12,6 +12,12 @@ pub struct User {
     #[prost(string, tag = "2")]
     #[builder(setter(into))]
     pub name: ::prost::alloc::string::String,
+    #[prost(int32, repeated, tag = "3")]
+    #[sqlx(default)]
+    pub viewed_but_not_starteds: ::prost::alloc::vec::Vec<i32>,
+    #[prost(int32, repeated, tag = "4")]
+    #[sqlx(default)]
+    pub started_but_not_finisheds: ::prost::alloc::vec::Vec<i32>,
 }
 #[derive(derive_builder::Builder)]
 #[builder(setter(into, strip_option), default)]

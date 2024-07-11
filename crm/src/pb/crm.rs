@@ -370,6 +370,7 @@ pub struct WelcomeResponse {
 pub struct RecallRequest {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
+    /// interval for last visit time (say 7 is last visit time was 7 days ago)
     #[prost(uint32, tag = "2")]
     pub last_visit_interval: u32,
     #[prost(uint32, repeated, tag = "3")]
@@ -386,6 +387,7 @@ pub struct RecallResponse {
 pub struct RemindRequest {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
+    /// interval for last visit time (say 7 is last visit time was 7 days ago)
     #[prost(uint32, tag = "2")]
     pub last_visit_interval: u32,
 }

@@ -15,6 +15,7 @@ message WelcomeResponse {
 
 message RecallRequest {
   string id = 1;
+  // interval for last visit time (say 7 is last visit time was 7 days ago)
   uint32 last_visit_interval = 2;
   repeated uint32 content_ids = 3;
 }
@@ -25,6 +26,7 @@ message RecallResponse {
 
 message RemindRequest {
   string id = 1;
+  // interval for last visit time (say 7 is last visit time was 7 days ago)
   uint32 last_visit_interval = 2;
 }
 

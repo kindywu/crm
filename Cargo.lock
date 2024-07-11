@@ -373,6 +373,7 @@ dependencies = [
  "chrono",
  "crm-metadata",
  "crm-send",
+ "futures",
  "prost",
  "prost-build",
  "prost-types",

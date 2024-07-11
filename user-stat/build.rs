@@ -17,6 +17,13 @@ fn main() -> Result<()> {
             Some(&[r#"#[serde(rename_all = "camelCase")]"#]),
         )
         .with_sqlx_from_row(&["User"], None)
+        .with_field_attributes(
+            &[
+                "User.viewed_but_not_starteds",
+                "User.started_but_not_finisheds",
+            ],
+            &[r#"#[sqlx(default)]"#],
+        )
         .out_dir("src/pb")
         .with_derive_builder(
             &[
