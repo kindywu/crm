@@ -1,5 +1,6 @@
 use std::time::SystemTime;
 use tonic::{Request, Response, Status};
+use tracing::info;
 
 use crate::{
     user_server::{User, UserServer},
@@ -38,7 +39,7 @@ impl User for UserService {
         request: Request<GetUserRequest>,
     ) -> Result<Response<UserInfo>, Status> {
         let input = request.into_inner();
-        println!("get_user: {:?}", input);
+        info!("get_user: {:?}", input);
         Ok(Response::new(UserInfo::default()))
     }
     async fn create_user(
@@ -46,7 +47,7 @@ impl User for UserService {
         request: Request<CreateUserRequest>,
     ) -> Result<Response<UserInfo>, Status> {
         let input = request.into_inner();
-        println!("create_user: {:?}", input);
+        info!("create_user: {:?}", input);
         Ok(Response::new(UserInfo::default()))
     }
 }

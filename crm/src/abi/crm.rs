@@ -8,6 +8,7 @@ use futures::StreamExt;
 use tonic::{
     async_trait, transport::Channel, IntoStreamingRequest, Request, Response, Status, Streaming,
 };
+use tracing::{info, warn};
 use user_stat::{user_stat_client::UserStatClient, User};
 use uuid::Uuid;
 
@@ -186,24 +187,29 @@ impl CrmService {
                     return None;
                 }
 
-                println!("getting content for send: {content_ids:?}");
+                info!("getting content for send: {content_ids:?}");
 
-                let content_ids: Vec<_> = content_ids
+                let content_materialize_requests: Vec<_> = content_ids.clone()
                     .into_iter()
                     .map(|id| MaterializeRequest { id: id as _ })
                     .collect();
 
-                let stream = tokio_stream::iter(content_ids);
-                if let Ok(metadata_response) = metadata.materialize(stream).await {
-                    let metadata_stream = metadata_response.into_inner();
-                    let contents: Vec<Content> = metadata_stream
-                        .filter_map(|item| async move { item.ok() })
-                        .collect::<Vec<Content>>()
-                        .await;
-
-                    Some(gen_send_req(subject, sender, user.email, contents))
-                } else {
-                    None
+                let stream = tokio_stream::iter(content_materialize_requests);
+                match metadata.materialize(stream).await {
+                    Ok(metadata_response) => {
+                        let metadata_stream = metadata_response.into_inner();
+                        let contents: Vec<Content> = metadata_stream
+                            .filter_map(|item| async move { item.ok() })
+                            .collect::<Vec<Content>>()
+                            .await;
+                        Some(gen_send_req(subject, sender, user.email, contents))
+                    }
+                    Err(e) => {
+                        warn!(
+                            "getting data from metadata service with {content_ids:?}, get error: {e}"
+                        );
+                        None
+                    }
                 }
             }
         })

@@ -1,5 +1,6 @@
 use chrono::{Duration, Utc};
 use prost_types::Timestamp;
+use tracing::info;
 use user_stat::{QueryRequest, QueryRequestBuilder, RawQueryRequest, TimeQuery};
 
 pub fn new_query_request_for_wellcome(interval: i64) -> QueryRequest {
@@ -46,7 +47,7 @@ pub fn new_raw_query_request_for_recall(interval: i64) -> RawQueryRequest {
     // 最后一次访问后，还没有被提醒过，并且最后一次访问时间在now-interval这一天内
     let sql =
         format!("SELECT email, name FROM user_stats WHERE last_visited_at > last_email_notification AND last_visited_at BETWEEN '{}' AND '{}'", lower, upper);
-    println!("Generated SQL: {}", sql);
+    info!("Generated SQL: {}", sql);
 
     RawQueryRequest { query: sql }
 }
@@ -75,7 +76,7 @@ pub fn new_raw_query_request_for_remind(interval: i64) -> RawQueryRequest {
         AND started_but_not_finished IS NOT NULL AND array_length(started_but_not_finished, 1) > 0",
         lower, upper
     );
-    println!("Generated SQL: {}", sql);
+    info!("Generated SQL: {}", sql);
 
     RawQueryRequest { query: sql }
 }
