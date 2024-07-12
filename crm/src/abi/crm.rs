@@ -6,7 +6,8 @@ use crm_send::{notification_client::NotificationClient, EmailMessage, SendReques
 // use tokio_stream::StreamExt;
 use futures::StreamExt;
 use tonic::{
-    async_trait, transport::Channel, IntoStreamingRequest, Request, Response, Status, Streaming,
+    async_trait, service::interceptor::InterceptedService, transport::Channel,
+    IntoStreamingRequest, Request, Response, Status, Streaming,
 };
 use tracing::{info, warn};
 use user_stat::{user_stat_client::UserStatClient, User};
@@ -14,8 +15,8 @@ use uuid::Uuid;
 
 use crate::{
     crm_server::{Crm, CrmServer},
-    AppConfig, RecallRequest, RecallResponse, RemindRequest, RemindResponse, WelcomeRequest,
-    WelcomeResponse,
+    AppConfig, AuthInterceptor, RecallRequest, RecallResponse, RemindRequest, RemindResponse,
+    WelcomeRequest, WelcomeResponse,
 };
 
 use super::build_query::{
@@ -48,8 +49,8 @@ impl CrmService {
         })
     }
 
-    pub fn into_server(self) -> CrmServer<Self> {
-        CrmServer::new(self)
+    pub fn into_server(self) -> Result<InterceptedService<CrmServer<CrmService>, AuthInterceptor>> {
+        Ok(CrmServer::with_interceptor(self, AuthInterceptor))
     }
 }
 

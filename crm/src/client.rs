@@ -6,8 +6,10 @@ use crm::{
     RecallRequest, RemindRequest, WelcomeRequest,
 };
 use tonic::{
+    metadata::MetadataValue,
+    service::interceptor::InterceptedService,
     transport::{Certificate, Channel, ClientTlsConfig},
-    Request,
+    Request, Status,
 };
 use uuid::Uuid;
 
@@ -25,17 +27,25 @@ async fn main() -> Result<()> {
         .connect()
         .await?;
 
-    let mut client = UserClient::new(channel.clone());
+    let token: MetadataValue<_> = "abc".parse()?;
+    let mut client = UserClient::with_interceptor(channel.clone(), move |mut req: Request<()>| {
+        req.metadata_mut().insert("authorization", token.clone());
+        Ok(req)
+    });
     call_user_service(&mut client).await?;
 
-    let mut client = CrmClient::new(channel);
-    call_crm_welcome(&mut client).await?;
-    call_crm_recall(&mut client).await?;
-    call_crm_remind(&mut client).await?;
+    // let mut client = CrmClient::new(channel);
+    // call_crm_welcome(&mut client).await?;
+    // call_crm_recall(&mut client).await?;
+    // call_crm_remind(&mut client).await?;
     Ok(())
 }
 
-async fn call_user_service(client: &mut UserClient<Channel>) -> Result<()> {
+async fn call_user_service(
+    client: &mut UserClient<
+        InterceptedService<Channel, impl Fn(Request<()>) -> Result<Request<()>, Status>>,
+    >,
+) -> Result<()> {
     let request = Request::new(GetUserRequest { id: 1 });
 
     let response = client.get_user(request).await?;

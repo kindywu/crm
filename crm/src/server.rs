@@ -26,8 +26,8 @@ async fn main() -> Result<()> {
     };
 
     server
-        .add_service(user_service.into_server())
-        .add_service(crm_service.into_server())
+        .add_service(user_service.into_server()?)
+        .add_service(crm_service.into_server()?)
         .serve(addr)
         .await?;
 

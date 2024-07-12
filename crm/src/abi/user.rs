@@ -1,12 +1,14 @@
-use std::time::SystemTime;
-use tonic::{Request, Response, Status};
-use tracing::info;
-
 use crate::{
     user_server::{User, UserServer},
     CreateUserRequest, GetUserRequest, UserInfo,
 };
+use anyhow::Result;
 use prost_types::Timestamp;
+use std::time::SystemTime;
+use tonic::{service::interceptor::InterceptedService, Request, Response, Status};
+use tracing::info;
+
+use super::AuthInterceptor;
 
 impl UserInfo {
     pub fn new(id: u64, name: &str, email: &str) -> Self {
@@ -27,8 +29,10 @@ impl UserService {
         Self {}
     }
 
-    pub fn into_server(self) -> UserServer<Self> {
-        UserServer::new(self)
+    pub fn into_server(
+        self,
+    ) -> Result<InterceptedService<UserServer<UserService>, AuthInterceptor>> {
+        Ok(UserServer::with_interceptor(self, AuthInterceptor))
     }
 }
 
