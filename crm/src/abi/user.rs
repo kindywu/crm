@@ -1,6 +1,6 @@
 use crate::{
     user_server::{User, UserServer},
-    CreateUserRequest, GetUserRequest, UserInfo,
+    AuthUser, CreateUserRequest, GetUserRequest, UserInfo,
 };
 use anyhow::Result;
 use prost_types::Timestamp;
@@ -42,16 +42,22 @@ impl User for UserService {
         &self,
         request: Request<GetUserRequest>,
     ) -> Result<Response<UserInfo>, Status> {
+        let auth_user: &AuthUser = request.extensions().get().unwrap();
+        info!("Auth User: {}", auth_user);
+
         let input = request.into_inner();
-        info!("get_user: {:?}", input);
+        info!("Get User: {:?}", input);
         Ok(Response::new(UserInfo::default()))
     }
     async fn create_user(
         &self,
         request: Request<CreateUserRequest>,
     ) -> Result<Response<UserInfo>, Status> {
+        let auth_user: &AuthUser = request.extensions().get().unwrap();
+        info!("Auth User: {}", auth_user);
+
         let input = request.into_inner();
-        info!("create_user: {:?}", input);
+        info!("Create User: {:?}", input);
         Ok(Response::new(UserInfo::default()))
     }
 }
