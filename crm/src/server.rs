@@ -1,6 +1,6 @@
 use anyhow::Result;
 use crm::{AppConfig, CrmService, UserService};
-use tonic::transport::Server;
+use tonic::transport::{Identity, Server, ServerTlsConfig};
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
 
@@ -17,7 +17,15 @@ async fn main() -> Result<()> {
 
     info!("CrmServer listening on {}", addr);
 
-    Server::builder()
+    let mut server = if let Some(tls) = config.server.tls {
+        info!("start with tls");
+        let identity = Identity::from_pem(tls.cert, tls.key);
+        Server::builder().tls_config(ServerTlsConfig::new().identity(identity))?
+    } else {
+        Server::builder()
+    };
+
+    server
         .add_service(user_service.into_server())
         .add_service(crm_service.into_server())
         .serve(addr)
