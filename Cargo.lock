@@ -2782,6 +2782,7 @@ dependencies = [
  "derive_builder",
  "dotenv",
  "fake",
+ "futures",
  "itertools 0.13.0",
  "nanoid",
  "prost",

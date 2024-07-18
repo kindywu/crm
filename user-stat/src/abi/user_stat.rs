@@ -1,18 +1,44 @@
 use chrono::{DateTime, TimeZone, Utc};
+use futures::{stream, Stream};
 use itertools::Itertools;
 use prost_types::Timestamp;
 use std::pin::Pin;
-use tokio_stream::{self as stream, Stream};
 
 use tonic::{Response, Status};
 
 use crate::{QueryRequest, RawQueryRequest, User, UserStatService};
 
-pub type ResponseStream = Pin<Box<dyn Stream<Item = Result<User, Status>> + Send>>;
+pub type ResponseStream = Pin<Box<dyn Stream<Item = Result<User, Status>> + Send + 'static>>;
 
 //  type QueryStream: Stream<Item = Result<User, Status>,> + Send+ 'static;
 
 impl UserStatService {
+    pub async fn raw_query(
+        &self,
+        req: RawQueryRequest,
+    ) -> Result<Response<ResponseStream>, Status> {
+        let users = sqlx::query_as::<_, User>(&req.query)
+            .fetch_all(&self.state.pool)
+            .await
+            .map_err(|err| Status::internal(err.to_string()))?;
+
+        let stream = stream::iter(users.into_iter().map(Ok));
+        let response_stream = Box::pin(stream);
+        Ok(Response::new(response_stream))
+    }
+
+    // pub async fn raw_query_2(
+    //     &'static self,
+    //     req: &'static RawQueryRequest,
+    // ) -> Result<Response<ResponseStream>, Status> {
+    //     let stream = sqlx::query_as::<_, User>(&req.query.clone())
+    //         .fetch(&self.state.pool)
+    //         .map_err(|e| Status::unknown(e.to_string()))
+    //         .boxed();
+
+    //     Ok(Response::new(stream))
+    // }
+
     pub async fn query(&self, req: QueryRequest) -> Result<Response<ResponseStream>, Status> {
         let mut sql = "SELECT email, name FROM user_stats WHERE 1=1".to_string();
 
@@ -40,21 +66,8 @@ impl UserStatService {
 
         println!("Generated SQL: {}", sql);
 
-        self.raw_query(RawQueryRequest { query: sql }).await
-    }
-
-    pub async fn raw_query(
-        &self,
-        req: RawQueryRequest,
-    ) -> Result<Response<ResponseStream>, Status> {
-        let users = sqlx::query_as::<_, User>(&req.query)
-            .fetch_all(&self.state.pool)
-            .await
-            .map_err(|err| Status::internal(err.to_string()))?;
-
-        let stream = stream::iter(users.into_iter().map(Ok));
-        let response_stream = Box::pin(stream);
-        Ok(Response::new(response_stream))
+        let req = RawQueryRequest { query: sql };
+        self.raw_query(req).await
     }
 }
 
@@ -129,7 +142,8 @@ mod tests {
 
         let query = "select * from user_stats where created_at > '2024-01-01' limit 5".to_string();
 
-        let mut stream = svc.raw_query(RawQueryRequest { query }).await?.into_inner();
+        let req = RawQueryRequest { query };
+        let mut stream = svc.raw_query(req).await?.into_inner();
 
         while let Some(Ok(res)) = stream.next().await {
             println!("{:?}", res);
