@@ -2777,6 +2777,7 @@ name = "user-stat"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-stream",
  "chrono",
  "clickhouse",
  "derive_builder",
