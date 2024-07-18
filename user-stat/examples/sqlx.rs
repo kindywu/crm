@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
     let request = Request {
         query: query.to_string(),
     };
-    let mut users = app.native_query(&request);
+    let mut users = app.raw_query(&request).await?;
     while let Some(user) = users.try_next().await? {
         println!("{:?}", user);
     }
@@ -37,5 +37,9 @@ impl App {
             .fetch(&self.pool)
             .map_err(|e| Status::unknown(e.to_string()))
             .boxed()
+    }
+
+    async fn raw_query<'a>(&'a self, req: &'a Request) -> Result<ResponseStream<'a>, Status> {
+        Ok(self.native_query(req))
     }
 }
