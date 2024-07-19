@@ -1,5 +1,4 @@
 use anyhow::Result;
-use tokio::net::TcpListener;
 use tonic::transport::Server;
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
@@ -11,12 +10,12 @@ async fn main() -> Result<()> {
     tracing_subscriber::registry().with(layer).init();
 
     let config = AppConfig::load()?;
-    // let addr = config.server.port;
-    // let addr = format!("[::1]:{}", addr).parse()?;
+    let addr = config.server.port;
+    let addr = format!("[::1]:{}", addr).parse()?;
 
-    let listener = TcpListener::bind("0.0.0.0:0").await?;
-    let addr = listener.local_addr()?;
-    drop(listener);
+    // let listener = TcpListener::bind("0.0.0.0:0").await?;
+    // let addr = listener.local_addr()?;
+    // drop(listener);
 
     info!("UserStatServer listening on {}", addr);
     let app_state = AppState::try_new(config).await?;

@@ -38,7 +38,7 @@ impl UserStat for UserStatService {
         &self,
         request: tonic::Request<RawQueryRequest>,
     ) -> Result<Response<Self::QueryStream>, Status> {
-        let request = request.into_inner();
-        self.raw_query(request).await
+        let req = request.into_inner();
+        self.raw_query_stream(req).await
     }
 }

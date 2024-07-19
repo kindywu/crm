@@ -1,15 +1,16 @@
 use chrono::{DateTime, TimeZone, Utc};
-use futures::{stream, Stream, StreamExt, TryStreamExt};
+use futures::{stream, Stream, TryStreamExt};
 use itertools::Itertools;
 use prost_types::Timestamp;
 use std::pin::Pin;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 
 use tonic::{Response, Status};
 
 use crate::{QueryRequest, RawQueryRequest, User, UserStatService};
 
 pub type ResponseStream = Pin<Box<dyn Stream<Item = Result<User, Status>> + Send + 'static>>;
-pub type ResponseStream2<'a> = Pin<Box<dyn Stream<Item = Result<User, Status>> + Send + 'a>>;
 
 //  type QueryStream: Stream<Item = Result<User, Status>,> + Send+ 'static;
 
@@ -28,16 +29,28 @@ impl UserStatService {
         Ok(Response::new(response_stream))
     }
 
-    pub async fn raw_query_2<'a>(
-        &'a self,
-        req: &'a RawQueryRequest,
-    ) -> Result<Response<ResponseStream2<'a>>, Status> {
-        let stream = sqlx::query_as::<_, User>(&req.query)
-            .fetch(&self.state.pool)
-            .map_err(|e| Status::unknown(e.to_string()))
-            .boxed();
+    pub async fn raw_query_stream(
+        &self,
+        req: RawQueryRequest,
+    ) -> Result<Response<ResponseStream>, Status> {
+        let (tx, rx) = mpsc::channel(1024);
 
-        Ok(Response::new(stream))
+        let query = req.query.clone();
+        let state = self.state.clone();
+
+        tokio::spawn(async move {
+            let mut stream = sqlx::query_as::<_, User>(&query)
+                .fetch(&state.pool)
+                .map_err(|e| Status::unknown(e.to_string()));
+
+            while let Ok(Some(user)) = stream.try_next().await {
+                tx.send(Ok(user)).await.unwrap()
+            }
+        });
+
+        let stream = ReceiverStream::new(rx);
+
+        Ok(Response::new(Box::pin(stream)))
     }
 
     pub async fn query(&self, req: QueryRequest) -> Result<Response<ResponseStream>, Status> {
@@ -153,14 +166,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn raw_query_2_should_work() -> Result<()> {
+    async fn raw_query_stream_should_work() -> Result<()> {
         let (_tdb, app_state) = AppState::try_new_test().await?;
         let svc = UserStatService::new(app_state).await?;
 
         let query = "select * from user_stats where created_at > '2024-01-01' limit 5".to_string();
 
         let req = RawQueryRequest { query };
-        let mut stream = svc.raw_query_2(&req).await?.into_inner();
+        let mut stream = svc.raw_query_stream(req).await?.into_inner();
 
         while let Some(Ok(res)) = stream.next().await {
             println!("{:?}", res);

@@ -34,10 +34,14 @@ async fn main() -> Result<()> {
     });
     call_user_service(&mut client).await?;
 
-    // let mut client = CrmClient::new(channel);
-    // call_crm_welcome(&mut client).await?;
-    // call_crm_recall(&mut client).await?;
-    // call_crm_remind(&mut client).await?;
+    let token: MetadataValue<_> = "abc".parse()?;
+    let mut client = CrmClient::with_interceptor(channel.clone(), move |mut req: Request<()>| {
+        req.metadata_mut().insert("authorization", token.clone());
+        Ok(req)
+    });
+    call_crm_welcome(&mut client).await?;
+    call_crm_recall(&mut client).await?;
+    call_crm_remind(&mut client).await?;
     Ok(())
 }
 
@@ -63,10 +67,14 @@ async fn call_user_service(
     Ok(())
 }
 
-async fn call_crm_welcome(client: &mut CrmClient<Channel>) -> Result<()> {
+async fn call_crm_welcome(
+    client: &mut CrmClient<
+        InterceptedService<Channel, impl Fn(Request<()>) -> Result<Request<()>, Status>>,
+    >,
+) -> Result<()> {
     let req = WelcomeRequest {
         id: Uuid::new_v4().to_string(),
-        interval: 99,
+        interval: 108,
         content_ids: [1, 2, 3].to_vec(),
     };
 
@@ -75,10 +83,14 @@ async fn call_crm_welcome(client: &mut CrmClient<Channel>) -> Result<()> {
     Ok(())
 }
 
-async fn call_crm_recall(client: &mut CrmClient<Channel>) -> Result<()> {
+async fn call_crm_recall(
+    client: &mut CrmClient<
+        InterceptedService<Channel, impl Fn(Request<()>) -> Result<Request<()>, Status>>,
+    >,
+) -> Result<()> {
     let req = RecallRequest {
         id: Uuid::new_v4().to_string(),
-        last_visit_interval: 10, //测试数据：SELECT email, name, last_visited_at FROM user_stats WHERE last_visited_at > last_email_notification order by last_visited_at desc limit 10;
+        last_visit_interval: 19, //测试数据：SELECT email, name, last_visited_at FROM user_stats WHERE last_visited_at > last_email_notification order by last_visited_at desc limit 10;
         content_ids: [1, 2, 3].to_vec(),
     };
 
@@ -87,7 +99,11 @@ async fn call_crm_recall(client: &mut CrmClient<Channel>) -> Result<()> {
     Ok(())
 }
 
-async fn call_crm_remind(client: &mut CrmClient<Channel>) -> Result<()> {
+async fn call_crm_remind(
+    client: &mut CrmClient<
+        InterceptedService<Channel, impl Fn(Request<()>) -> Result<Request<()>, Status>>,
+    >,
+) -> Result<()> {
     let req = RemindRequest {
         id: Uuid::new_v4().to_string(),
         last_visit_interval: 10, //测试数据：SELECT email, name, last_visited_at FROM user_stats WHERE last_visited_at > last_email_notification order by last_visited_at desc limit 10;
